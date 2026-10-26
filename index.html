@@ -112,7 +112,7 @@
                 turn => `${turn.speaker}: ${turn.text}`
             ).join("\n\n");
 
-            const response = await fetch("/api/debate", {
+            const response = await fetch("/api/argue", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
