@@ -1,22 +1,220 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dear diary</title>
+    <title>Argument</title>
 
-        <style>
+    <style>
+        body {
+            font-family: Georgia, serif;
+            margin: 40px auto;
+            padding: 0 25px;
+            max-width: 1100px;
+        }
 
+        textarea {
+            width: 100%;
+            height: 90px;
+            padding: 12px;
+            box-sizing: border-box;
+            font: inherit;
+        }
 
+        button {
+            padding: 12px 20px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
 
+        .debate-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
 
+        .debate-box {
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 280px;
+        }
+
+        #angelBox {
+            background: #e8f3e8;
+        }
+
+        #devilBox {
+            background: #f6e7e7;
+        }
+
+        .argument {
+            padding: 12px 0;
+            border-bottom: 1px solid #ccc;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 700px) {
+            .debate-layout {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+    <h1>Argument</h1>
 
+    <h2>What should we argue about?</h2>
 
-    
+    <textarea
+        id="topic"
+        placeholder="What should I do about my lack of motivation?"
+    ></textarea>
+
+    <br>
+
+    <button id="startButton">Start Debate</button>
+    <button id="continueButton" disabled>Continue Debate</button>
+
+    <p id="message"></p>
+
+    <div class="debate-layout">
+        <div id="angelBox" class="debate-box">
+            <h2>Angel</h2>
+            <div id="angelArguments"></div>
+        </div>
+
+        <div id="devilBox" class="debate-box">
+            <h2>Devil</h2>
+            <div id="devilArguments"></div>
+        </div>
+    </div>
+
+    <script>
+        const topicInput = document.getElementById("topic");
+        const startButton = document.getElementById("startButton");
+        const continueButton = document.getElementById("continueButton");
+        const message = document.getElementById("message");
+
+        const angelArguments = document.getElementById("angelArguments");
+        const devilArguments = document.getElementById("devilArguments");
+
+        let conversation = [];
+        let debateTopic = "";
+        let nextSpeaker = "Angel";
+
+        async function requestArgument(speaker) {
+            const transcript = conversation.map(
+                turn => `${turn.speaker}: ${turn.text}`
+            ).join("\n\n");
+
+            const response = await fetch("/api/debate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    speaker: speaker,
+                    topic: debateTopic,
+                    conversation: transcript
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "AI request failed");
+            }
+
+            conversation.push({
+                speaker: data.speaker,
+                text: data.argument
+            });
+
+            const paragraph = document.createElement("p");
+            paragraph.className = "argument";
+            paragraph.textContent = data.argument;
+
+            if (speaker === "Angel") {
+                angelArguments.appendChild(paragraph);
+            } else {
+                devilArguments.appendChild(paragraph);
+            }
+        }
+
+        startButton.addEventListener("click", async () => {
+            debateTopic = topicInput.value.trim();
+
+            if (!debateTopic) {
+                message.textContent = "Please enter a topic.";
+                return;
+            }
+
+            if (debateTopic.length > 1000) {
+                message.textContent = "Question is too long.";
+                return;
+            }
+
+            conversation = [];
+            nextSpeaker = "Angel";
+
+            angelArguments.replaceChildren();
+            devilArguments.replaceChildren();
+
+            startButton.disabled = true;
+            continueButton.disabled = true;
+
+            try {
+                message.textContent = "Angel is thinking...";
+                await requestArgument("Angel");
+
+                message.textContent = "Devil is responding...";
+                await requestArgument("Devil");
+
+                nextSpeaker = "Angel";
+                message.textContent = "";
+                continueButton.disabled = false;
+
+            } catch (error) {
+                message.textContent = error.message;
+                if (conversation.length > 0) {
+                    nextSpeaker = conversation.at(-1).speaker === "Angel"
+                        ? "Devil" : "Angel";
+                    continueButton.disabled = false;
+                }
+            } finally {
+                startButton.disabled = false;
+            }
+        });
+
+        continueButton.addEventListener("click", async () => {
+            startButton.disabled = true;
+            continueButton.disabled = true;
+
+            try {
+                message.textContent = `${nextSpeaker} is thinking...`;
+
+                await requestArgument(nextSpeaker);
+
+                nextSpeaker = nextSpeaker === "Angel"
+                    ? "Devil"
+                    : "Angel";
+
+                message.textContent = "";
+
+            } catch (error) {
+                message.textContent = error.message;
+
+            } finally {
+                startButton.disabled = false;
+                continueButton.disabled = false;
+            }
+        });
+    </script>
+
 </body>
+</html>
