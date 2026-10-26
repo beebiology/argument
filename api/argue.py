@@ -79,7 +79,11 @@ class handler(BaseHTTPRequestHandler):
             if len(topic) > 1000 or len(conversation) > 20000:
                 raise ValueError("Debate is too long")
 
-            argument = "Hello! The Python backend is working."
+            argument = generate_argument(
+                speaker,
+                topic,
+                conversation
+            )
 
             self.send_json(200, {
                 "speaker": speaker,
