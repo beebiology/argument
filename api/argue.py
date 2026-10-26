@@ -95,8 +95,8 @@ class handler(BaseHTTPRequestHandler):
 
         except Exception as error:
             print(
-                f"Debate error: {type(error).__name__}",
-                flush=True
-            )
+        f"Debate error: {type(error).__name__}: {error}",
+        flush=True
+    )
             self.send_json(500, {"error": "Unable to generate an argument"})
 
