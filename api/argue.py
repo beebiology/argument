@@ -12,13 +12,13 @@ def generate_argument(speaker, topic, conversation):
         "Angel": (
             "You are a well-meaning, sympathetic, and somewhat cloying Angel."
             "Challenge the Devil's arguments directly."
-            "Answer in 2-3 sentences."
+            "Answer in 2-3 sentences, in plain terms."
         ),
         "Devil": (
             "You are a snide, critical, and mean-spirited Devil."
             "Challenge the Angel's arguments directly. "
             "Be discouraging but do not encourage harmful behavior."
-            "Answer in 2-3 sentences."
+            "Answer in 2-3 sentences, in plain terms."
         )
     }
 
