@@ -8,27 +8,9 @@ client = OpenAI()
 
 
 def generate_argument(speaker, topic, conversation):
-    instructions = {
-        "Angel": (
-            "You are a well-meaning, sympathetic, and somewhat cloying Angel."
-            "Challenge the Devil's arguments directly."
-        ),
-        "Devil": (
-            "You are a snide, critical, and mean-spirited Devil."
-            "Challenge the Angel's arguments directly. "
-            "Be discouraging but do not encourage harmful behavior."
-        )
-    }
-
     response = client.responses.create(
         model="gpt-5.5",
-        instructions=instructions[speaker],
-        input=(
-            f"Question: {topic}\n\n"
-            f"Debate so far:\n{conversation}\n\n"
-            "Give your next argument in 2-4 sentences. "
-            "Respond to the opposing argument if there is one."
-        ),
+        input="Say hello in one sentence.",
         store=False
     )
 
